@@ -1,0 +1,12 @@
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "prettier.requireConfig": false,
+  "nodejs-testing.nodejsPath": "/Users/jc/.nvm/versions/node/v22.4.1/bin/node",
+  "nodejs-testing.extensions": [
+    {
+      "extensions": ["mts", "cts", "ts"],
+      "parameters": ["--import", "tsx"]
+    }
+  ]
+}
