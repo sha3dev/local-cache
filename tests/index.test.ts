@@ -78,7 +78,7 @@ test("Should correctly handle key locking logic during concurrent calculations",
   // Function that simulates calculation and sets the value in the cache
   const calculateAndSetValue = async () => {
     // Simulate delay in calculation
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     cache.set(key, value);
   };
 
@@ -87,9 +87,9 @@ test("Should correctly handle key locking logic during concurrent calculations",
 
   // Start multiple concurrent get requests for the same key
   const resultsPromise = Promise.all([
-    cache.get(key, true),
-    cache.get(key, true),
-    cache.get(key, true),
+    cache.get(key, 2000),
+    cache.get(key, 2000),
+    cache.get(key, 2000),
   ]);
 
   // Wait for the get requests to complete
@@ -113,4 +113,35 @@ test("Should correctly handle key locking logic during concurrent calculations",
     value,
     "Value should be returned immediately from the cache"
   );
+});
+
+test("Should correctly handle key locking timeout", async () => {
+  const cache = new LocalCache();
+  const key = "testKeyLock";
+  const value = "testValueLock";
+
+  // Function that simulates calculation and sets the value in the cache
+  const calculateAndSetValue = async () => {
+    // Simulate delay in calculation
+    await new Promise((resolve) => setTimeout(resolve, 10000));
+    cache.set(key, value);
+  };
+
+  // Start calculation without waiting for it to finish
+  calculateAndSetValue();
+
+  // Start multiple concurrent get requests for the same key
+  const resultsPromise = Promise.all([
+    cache.get(key, 2000),
+    cache.get(key, 2000),
+    cache.get(key, 2000),
+  ]);
+
+  // Wait for the get requests to complete
+  const results = await resultsPromise;
+
+  // Verify that all get requests receive the correct value
+  for (let i = 0; i < results.length; i++) {
+    assert.strictEqual(results[i], null, "All requests should return null");
+  }
 });

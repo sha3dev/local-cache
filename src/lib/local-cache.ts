@@ -38,6 +38,8 @@ export type LocalCacheItem = {
  * consts
  */
 
+const MAX_NUMBER_OF_CACHED_KEYS = 10000;
+
 const DEFAULT_TTL_MS = 5000;
 
 const DEFAULT_CLEAN_CACHE_INTERVAL_MS = 30000;
@@ -46,7 +48,7 @@ const DEFAULT_CLEAN_CACHE_INTERVAL_MS = 30000;
  * exports
  */
 
-export default class {
+export default class LocalCache {
   /**
    * private: attributes
    */
@@ -119,7 +121,8 @@ export default class {
    */
 
   public set(key: string, value: unknown, ttl?: number) {
-    const maxNumberOfCachedKeys = this.options?.maxNumberOfCachedKeys;
+    const maxNumberOfCachedKeys =
+      this.options?.maxNumberOfCachedKeys || MAX_NUMBER_OF_CACHED_KEYS;
     if (!this.options?.disabled) {
       if (!maxNumberOfCachedKeys || this.size() < maxNumberOfCachedKeys) {
         const effectiveTtl = ttl || this.ttl;
@@ -137,7 +140,7 @@ export default class {
 
   public async get<T>(
     key: string,
-    waitIfSetInProcess?: boolean
+    waitIfSetInProcessMs?: number
   ): Promise<T | null> {
     if (this.options?.disabled) {
       return null;
@@ -147,11 +150,19 @@ export default class {
       if (result) {
         logger.debug(`retrieved ${key} from cache`);
         resolve(result);
-      } else if (waitIfSetInProcess) {
+      } else if (waitIfSetInProcessMs) {
         if (!this.lockCallbacks[key]) {
           this.lockCallbacks[key] = [];
           resolve(result);
         } else {
+          setTimeout(() => {
+            if (this.lockCallbacks[key]?.includes(resolve)) {
+              this.lockCallbacks[key] = this.lockCallbacks[key].filter(
+                (i) => i !== resolve
+              );
+              resolve(null);
+            }
+          }, waitIfSetInProcessMs);
           this.lockCallbacks[key].push(resolve);
         }
       } else {
