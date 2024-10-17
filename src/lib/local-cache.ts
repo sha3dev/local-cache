@@ -138,6 +138,14 @@ export default class LocalCache {
     }
   }
 
+  public delete(key: string) {
+    if (!this.options?.disabled) {
+      logger.debug(`delete ${key}`);
+      return this.cache.delete(key);
+    }
+    return false;
+  }
+
   public async get<T>(
     key: string,
     waitIfSetInProcessMs?: number
