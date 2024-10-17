@@ -24,7 +24,7 @@ const logger = new Logger("local-cache");
 
 export type LocalCacheOptions = {
   disabled?: boolean;
-  defaultTTLMs?: number;
+  defaultTtlMs?: number;
   cleanCacheIntervalMs?: number;
   maxNumberOfCachedKeys?: number;
 };
@@ -53,7 +53,7 @@ export default class LocalCache {
    * private: attributes
    */
 
-  private ttl: number = DEFAULT_TTL_MS;
+  private ttlMs: number = DEFAULT_TTL_MS;
 
   private cache = new Map<string, LocalCacheItem>();
 
@@ -109,8 +109,8 @@ export default class LocalCache {
    */
 
   constructor(private options?: LocalCacheOptions) {
-    this.ttl = options?.defaultTTLMs || DEFAULT_TTL_MS;
-    logger.debug(`created local-cache, ttl: ${this.ttl}`);
+    this.ttlMs = options?.defaultTtlMs || DEFAULT_TTL_MS;
+    logger.debug(`created local-cache, ttl: ${this.ttlMs}`);
     const cleanCacheIntervalMs =
       options?.cleanCacheIntervalMs || DEFAULT_CLEAN_CACHE_INTERVAL_MS;
     setInterval(this.clear, cleanCacheIntervalMs);
@@ -120,12 +120,12 @@ export default class LocalCache {
    * public: methods
    */
 
-  public set(key: string, value: unknown, ttl?: number) {
+  public set(key: string, value: unknown, ttlMs?: number) {
     const maxNumberOfCachedKeys =
       this.options?.maxNumberOfCachedKeys || MAX_NUMBER_OF_CACHED_KEYS;
     if (!this.options?.disabled) {
       if (!maxNumberOfCachedKeys || this.size() < maxNumberOfCachedKeys) {
-        const effectiveTtl = ttl || this.ttl;
+        const effectiveTtl = ttlMs || this.ttlMs;
         const expiredOn = Date.now() + effectiveTtl;
         logger.debug(`set ${key} (ttl: ${effectiveTtl})`);
         this.cache.set(key, { value, expiredOn });

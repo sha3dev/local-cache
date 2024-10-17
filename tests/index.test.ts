@@ -18,7 +18,7 @@ test("Should set and get a value correctly", async () => {
 });
 
 test("Should respect TTL and expire the value after the specified time", async () => {
-  const cache = new LocalCache({ defaultTTLMs: 100 });
+  const cache = new LocalCache({ defaultTtlMs: 100 });
   const key = "testKeyTTL";
   const value = "testValueTTL";
 
